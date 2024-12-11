@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  loan_issuer:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    tty: true
+    command: php -S 0.0.0.0:8000 -t public
+    environment:
+      - APP_ENV=dev
+      - APP_DEBUG=1

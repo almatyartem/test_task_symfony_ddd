@@ -1,0 +1,12 @@
+parameters:
+  eligibility.min_credit_score: 500
+  eligibility.min_income: 1000
+  eligibility.min_age: 18
+  eligibility.max_age: 60
+  eligibility.eligible_states: ['CA','NY','NV']
+  eligibility.non_eligibility_explanation:
+    default: 'Условие не выполнено'
+    CreditScoreChecker: 'Кредитный рейтинг клиента должен быть выше 500'
+    AgeChecker: 'Возраст клиента должен быть от 18 до 60 лет'
+    StateChecker: 'Кредиты выдаются только в штатах CA, NY, NV'
+    IncomeChecker: 'Ежемесячный доход клиента должен быть не менее $1000'

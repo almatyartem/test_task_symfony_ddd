@@ -1,10 +1,3 @@
-# This file is the entry point to configure your own services.
-# Files in the packages/ subdirectory configure your dependencies.
-
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
-parameters:
-
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -22,3 +15,76 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    #Application
+    App\Application\Service\Contract\ClientServiceInterface:
+        class: App\Application\Service\ClientService
+    App\Application\Service\Contract\LoanRequestHandlerInterface:
+        class: App\Application\Service\LoanRequestHandler
+
+    App\Application\Service\Contract\NotificationServiceInterface:
+        alias: App\Application\Service\NotificationService
+        public: true
+    App\Application\Service\NotificationService:
+        arguments:
+            $senders: !tagged_iterator 'notifications.sender'
+    App\Application\Service\LoanRequestHandler:
+        autowire: true
+    App\Application\Service\ClientService:
+        autowire: true
+
+
+    #Domain
+    App\Domain\Service\Contract\DecisionParametersInterface:
+        class: App\Infrastructure\Config\ParameterBagDecisionParameters
+    App\Domain\Service\Contract\InterestsRateConfigInterface:
+        class: App\Infrastructure\Config\ParameterBagInterestsRateConfig
+    App\Domain\Service\Contract\DomainEventPublisherInterface:
+        class: App\Infrastructure\Event\SymfonyDomainEventPublisher
+    App\Domain\Repository\ClientRepositoryInterface:
+        class: App\Infrastructure\Persistence\InMemoryClientRepository
+    App\Domain\Repository\LoanRepositoryInterface:
+        class: App\Infrastructure\Persistence\InMemoryLoanRepository
+    App\Domain\Service\Contract\DecisionMakerInterface:
+        class: App\Domain\Service\DecisionMaker
+    App\Domain\Service\Contract\InterestsRateCalculatorInterface:
+        class: App\Domain\Service\InterestsRateCalculator
+    App\Domain\Service\DecisionMaker:
+        arguments:
+            $config: '@App\Domain\Service\Contract\DecisionParametersInterface'
+    App\Domain\Service\InterestsRateCalculator:
+        arguments:
+            $config: '@App\Domain\Service\Contract\InterestsRateParametersInterface'
+    App\Domain\Service\EligibilityCheckers\AgeChecker:
+        tags: [ 'eligibility.checker' ]
+    App\Domain\Service\EligibilityCheckers\CreditScoreChecker:
+        tags: [ 'eligibility.checker' ]
+    App\Domain\Service\EligibilityCheckers\IncomeChecker:
+        tags: [ 'eligibility.checker' ]
+    App\Domain\Service\EligibilityCheckers\StateChecker:
+        tags: [ 'eligibility.checker' ]
+    App\Domain\Service\EligibilityService:
+        arguments:
+            $checkers: !tagged_iterator 'eligibility.checker'
+    App\Domain\Service\Contract\EligibilityServiceInterface:
+        alias: App\Domain\Service\EligibilityService
+        public: true
+    #Infrastructure
+    App\Infrastructure\Event\SymfonyDomainEventPublisher:
+        arguments:
+            $dispatcher: '@event_dispatcher'
+    App\Infrastructure\Config\ParameterBagDecisionParameters:
+        arguments:
+            $params: '@parameter_bag'
+    App\Infrastructure\Config\ParameterBagInterestsRateParameters:
+        arguments:
+            $params: '@parameter_bag'
+    App\Infrastructure\EventSubscriber\DecisionMadeSubscriber:
+        arguments:
+            $notificationService: '@App\Application\Service\NotificationService'
+        tags:
+            - { name: 'kernel.event_subscriber' }
+    App\Infrastructure\Notification\EmailNotificationService:
+        tags: [ 'notifications.sender' ]
+    App\Infrastructure\Notification\SmsNotificationService:
+        tags: [ 'notifications.sender' ]

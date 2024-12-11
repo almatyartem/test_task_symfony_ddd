@@ -1,0 +1,4 @@
+parameters:
+  loan.default_interest_rate: 5.5
+  loan.state_interests_rate_modifiers:
+    CA : 11.49

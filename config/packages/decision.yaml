@@ -1,0 +1,4 @@
+parameters:
+  decision.default_chance: 100
+  decision.state_chances:
+    NY : 50
